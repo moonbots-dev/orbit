@@ -18,7 +18,7 @@ final class OrbitApp: NSObject, NSApplicationDelegate, WKScriptMessageHandler, W
         status.button?.title = "◉"
         status.button?.toolTip = "Orbit"
         let menu = NSMenu()
-        for (title, action, key) in [("Open Orbit", #selector(showMain), "o"), ("Float Orbit", #selector(showHUD), ""), ("Hide floating Orbit", #selector(hideHUD), "")] {
+        for (title, action, key) in [("Open Orbit", #selector(showMain), ""), ("Open program…", #selector(openProgram), "o"), ("Float Orbit", #selector(showHUD), ""), ("Hide floating Orbit", #selector(hideHUD), "")] {
             let item = NSMenuItem(title: title, action: action, keyEquivalent: key); item.target = self; menu.addItem(item)
         }
         menu.addItem(.separator())
@@ -33,6 +33,9 @@ final class OrbitApp: NSObject, NSApplicationDelegate, WKScriptMessageHandler, W
         let appItem = NSMenuItem(); let appMenu = NSMenu()
         appMenu.addItem(withTitle: "Quit Orbit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu; bar.addItem(appItem)
+        let fileItem = NSMenuItem(); fileItem.title = "File"; let fileMenu = NSMenu(title: "File")
+        let openItem = NSMenuItem(title: "Open program…", action: #selector(openProgram), keyEquivalent: "o"); openItem.target = self
+        fileMenu.addItem(openItem); fileItem.submenu = fileMenu; bar.addItem(fileItem)
         let editItem = NSMenuItem(); editItem.title = "Edit"; let edit = NSMenu(title: "Edit")
         for (name, action, key) in [("Undo", Selector(("undo:")), "z"), ("Cut", #selector(NSText.cut(_:)), "x"), ("Copy", #selector(NSText.copy(_:)), "c"), ("Paste", #selector(NSText.paste(_:)), "v"), ("Select All", #selector(NSText.selectAll(_:)), "a")] {
             edit.addItem(withTitle: name, action: action, keyEquivalent: key)
@@ -40,11 +43,11 @@ final class OrbitApp: NSObject, NSApplicationDelegate, WKScriptMessageHandler, W
         editItem.submenu = edit; bar.addItem(editItem); NSApp.mainMenu = bar
     }
 
-    private func startRuntime() {
+    private func startRuntime(program: URL? = nil) {
         guard let resources = Bundle.main.resourceURL, let executables = Bundle.main.executableURL?.deletingLastPathComponent() else { return }
         let process = Process(), pipe = Pipe()
         process.executableURL = executables.appendingPathComponent("bun")
-        process.arguments = [resources.appendingPathComponent("runtime/cli.js").path, "dev", "--port", "0", "--native", "--assets", resources.appendingPathComponent("web").path]
+        process.arguments = [resources.appendingPathComponent("runtime/cli.js").path, "dev"] + (program.map { [$0.path] } ?? []) + ["--port", "0", "--native", "--assets", resources.appendingPathComponent("web").path]
         process.standardOutput = pipe; process.standardError = pipe
         process.currentDirectoryURL = resources
         self.runtime = process; self.output = pipe
@@ -126,6 +129,20 @@ final class OrbitApp: NSObject, NSApplicationDelegate, WKScriptMessageHandler, W
 
     @objc func hideHUD() { hud?.orderOut(nil) }
 
+    @objc func openProgram() {
+        let panel = NSOpenPanel(); panel.title = "Open a trusted Orbit program"; panel.message = "Choose a TypeScript file or .orbit package. Orbit runs it locally and reloads when you save changes."
+        panel.canChooseDirectories = false; panel.allowsMultipleSelection = false
+        panel.begin { result in
+            guard result == .OK, let url = panel.url, ["ts", "orbit"].contains(url.pathExtension.lowercased()) else { return }
+            self.output?.fileHandleForReading.readabilityHandler = nil
+            self.runtime?.terminationHandler = nil
+            if let process = self.runtime, process.isRunning { process.terminate(); process.waitUntilExit() }
+            self.main?.close(); self.hud?.close(); self.main = nil; self.hud = nil
+            self.port = nil; self.pending = ""; self.startupError = ""
+            self.startRuntime(program: url)
+        }
+    }
+
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
         guard message.frameInfo.isMainFrame, message.frameInfo.securityOrigin.host == "127.0.0.1", message.frameInfo.securityOrigin.port == port else { return }
         if let value = message.body as? [String: String], value["action"] == "save-file", let text = value["text"], text.utf8.count <= 2_100_000 {
@@ -136,7 +153,7 @@ final class OrbitApp: NSObject, NSApplicationDelegate, WKScriptMessageHandler, W
             return
         }
         guard let action = message.body as? String else { return }
-        switch action { case "show-main": showMain(); case "show-hud": showHUD(); case "hide-hud": hideHUD(); default: break }
+        switch action { case "show-main": showMain(); case "show-hud": showHUD(); case "hide-hud": hideHUD(); case "open-program": openProgram(); default: break }
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {

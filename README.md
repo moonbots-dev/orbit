@@ -59,7 +59,9 @@ bun run desktop:build
 bun run desktop:open
 ```
 
-The native app bundles Bun and its web assets. Use the pin button or **◉ → Float Orbit** to show the floating Familiar. Main and floating windows share one running device. Closing the main window leaves Orbit running; **Quit Orbit** ends it. The floating window stays above normal windows and follows desktop spaces.
+The open command installs your build into `~/Applications/Orbit.app` and opens it. Quit a running copy before installing a newer build. The native app bundles Bun and its web assets. Use the pin button or **◉ → Float Orbit** to show the floating Familiar. Main and floating windows share one running device. Closing the main window leaves Orbit running; **Quit Orbit** ends it. The floating window stays above normal windows and follows desktop spaces.
+
+Use **File → Open program…** or the Code panel to select a local `.ts` or `.orbit` file. Orbit watches it: save changes from your editor or AI agent and both windows update.
 
 This is a locally built, ad-hoc-signed Mac app. There is no signed/notarized download in this release. Windows, Linux native shells and mobile hosts are future work; the browser simulator and Bun runner are separate from the Mac shell.
 

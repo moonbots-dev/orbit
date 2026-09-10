@@ -26,6 +26,7 @@ const api = [
 export default function Studio() {
   const [source, setSource] = useState<string>(examples[0].source);
   const [panel, setPanel] = useState('home'), [desktop, setDesktop] = useState(false), [hud, setHud] = useState(false);
+  const [nativeApp, setNativeApp] = useState(false);
   const [state, setState] = useState('Starting'), [error, setError] = useState(''), [logs, setLogs] = useState<string[]>([]);
   const [object, setObject] = useState(false), [shell, setShell] = useState('#b3a1f5'), [mute, setMute] = useState(false);
   const [tilt, setTilt] = useState([0, 0]), [physical, setPhysical] = useState(false);
@@ -92,7 +93,7 @@ export default function Studio() {
     let cancelled = false;
     const params = new URLSearchParams(location.search);
     const isDesktop = params.get('desktop') === '1' && location.hostname === '127.0.0.1';
-    local.current = isDesktop; setDesktop(isDesktop); setHud(params.get('hud') === '1');
+    local.current = isDesktop; setDesktop(isDesktop); setNativeApp(!!(window as any).webkit?.messageHandlers?.orbit); setHud(params.get('hud') === '1');
     if (isDesktop) {
       void (async () => {
         const response = await fetch('/api/bootstrap'); const bootstrap = await response.json() as { token: string };
@@ -132,7 +133,7 @@ export default function Studio() {
     </aside>}
     <main className="os-home">
       <header className="os-top"><div><span className="os-kicker">{desktop ? 'YOUR ORBIT' : 'MEET YOUR ORBIT'}</span><span className="os-running"><i className={state === 'Running' ? 'live' : ''} />{physical ? 'USB device' : 'Virtual device'} · {state}</span></div>
-        {desktop && <button className="os-icon" aria-label={hud ? 'Close floating Orbit' : 'Show floating Orbit'} title={hud ? 'Close' : 'Float on desktop'} onClick={() => native(hud ? 'hide-hud' : 'show-hud')}>{hud ? <X size={17}/> : <Pin size={18}/>}</button>}
+        {nativeApp && <button className="os-icon" aria-label={hud ? 'Close floating Orbit' : 'Show floating Orbit'} title={hud ? 'Close' : 'Float on desktop'} onClick={() => native(hud ? 'hide-hud' : 'show-hud')}>{hud ? <X size={17}/> : <Pin size={18}/>}</button>}
         {!desktop && <a className="os-top-link" href="https://github.com/moonbots-dev/orbit">Get the source <ArrowUpRight size={15}/></a>}
       </header>
       <div className="os-stage">
@@ -151,6 +152,7 @@ export default function Studio() {
     {!hud && panel !== 'home' && <section className="os-panel" aria-label={panel}>
       <header><div><span className="os-kicker">{panel === 'code' ? 'YOUR NEXT LITTLE IDEA' : panel === 'inputs' ? 'PLAY WITH THE INPUTS' : 'THE TOOLS ARE YOURS'}</span><h2>{panel === 'code' ? 'Make it yours.' : panel === 'inputs' ? 'Give it a nudge.' : 'Small API. Full control.'}</h2></div><button className="os-icon" aria-label="Close panel" onClick={() => setPanel('home')}><X size={18}/></button></header>
       {panel === 'code' && <>
+        {nativeApp && <button className="os-secondary" onClick={() => native('open-program')}>Open a program from disk <ArrowUpRight size={16}/></button>}
         <label className="os-select-label">Start from <select aria-label="Example program" defaultValue="familiar" onChange={event => { const example = examples.find(e => e.id === event.target.value)!; setSource(example.source); currentSource.current = example.source; void run(example.source); }}>{examples.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></label>
         <div className="os-editor-top"><span>orbit.ts</span><span>TypeScript</span></div>
         <textarea aria-label="Orbit TypeScript program" spellCheck={false} value={source} onChange={event => { setSource(event.target.value); currentSource.current = event.target.value; }} onKeyDown={event => { if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') { event.preventDefault(); void run(); } }} />
@@ -160,12 +162,12 @@ export default function Studio() {
           if (!compiled.current || compiledSource.current !== source) { setError('Run this version first, then export its package.'); return; }
           download('my-orbit.orbit', JSON.stringify({ version: 1, name: 'My Orbit', source, code: compiled.current }, null, 2));
         }}>Export .orbit package <Download size={16}/></button>
-        <details><summary>Use with your AI coding agent</summary><p>Download orbit.ts and ask your agent to edit it. In the Orbit repository, run <code>bun run orbit dev orbit.ts</code>. Save the file to reload it here.</p><button className="os-secondary" onClick={() => { void navigator.clipboard.writeText("Build an Orbit program in TypeScript using @orbit/sdk. Start with orbit.connect({ target: 'runtime', control: ['screen'] }). Draw with puck.screen.animate((frame, timing) => { ... }); frame.clear('#09090c') first. Use frame.circle, ellipse, rect, line or path. Use puck.touch.on('down'/'move'/'up', handler). Screen coordinates are 240 × 240. No browser DOM or Node imports. Read SDK API.md and the example orbit.ts in the repository. Preserve clean lifecycle; await animation.finished.").then(() => log('Agent instructions copied.')).catch(e => setError(String(e))); }}>Copy agent instructions</button></details>
+        <details><summary>Use with your AI coding agent</summary><p>Download orbit.ts and ask your agent to edit it. In the Orbit repository, run <code>bun run orbit dev orbit.ts</code>. Save the file to reload its preview. On Mac, choose “Open a program from disk” to run and watch it in this app.</p><button className="os-secondary" onClick={() => { void navigator.clipboard.writeText("Build an Orbit program in TypeScript using @orbit/sdk. Start with orbit.connect({ target: 'runtime', control: ['screen'] }). Draw with puck.screen.animate((frame, timing) => { ... }); frame.clear('#09090c') first. Use frame.circle, ellipse, rect, line or path. Use puck.touch.on('down'/'move'/'up', handler). Screen coordinates are 240 × 240. No browser DOM or Node imports. Read SDK API.md and the example orbit.ts in the repository. Preserve clean lifecycle; await animation.finished.").then(() => log('Agent instructions copied.')).catch(e => setError(String(e))); }}>Copy agent instructions</button></details>
       </>}
       {panel === 'inputs' && <div className="os-inputs"><p>Send the same kinds of events a physical Orbit provides.</p><button className="os-primary" onClick={() => input({ type: 'attention', message: 'Your agent has something for you.' })}><Bell size={17}/> Ask for attention</button><button className="os-secondary" disabled={physical} onPointerDown={event => { event.currentTarget.setPointerCapture(event.pointerId); input({ type: 'button', down: true }); }} onPointerUp={() => input({ type: 'button', down: false })} onPointerCancel={() => input({ type: 'button', down: false })} onLostPointerCapture={() => input({ type: 'button', down: false })} onKeyDown={event => { if (event.key === ' ' && !event.repeat) input({ type: 'button', down: true }); }} onKeyUp={event => { if (event.key === ' ') input({ type: 'button', down: false }); }}>Hold the side button</button><label className="os-toggle">Mute switch<input type="checkbox" checked={mute} disabled={physical} onChange={event => { setMute(event.target.checked); input({ type: 'mute', value: event.target.checked }); }}/></label>
         {['Tilt left / right', 'Tilt forward / back'].map((label, i) => <label className="os-slider" key={label}>{label}<input type="range" min={-0.7} max={0.7} step={0.01} value={tilt[i]} disabled={physical} onChange={event => { const next = [...tilt]; next[i] = Number(event.target.value); setTilt(next); input({ type: 'tilt', x: next[0], y: next[1] }); }}/></label>)}
         <div className="os-finishes"><span>Shell finish</span>{['#b3a1f5', '#fff9e8', '#555361'].map((color, i) => <button key={color} aria-label={['Lilac shell','Chalk shell','Graphite shell'][i]} aria-pressed={shell === color} style={{ background: color }} onClick={() => setShell(color)}/>)}</div><p className="os-small">Inputs affect programs that subscribe to them. Try “An agent needs you” in Code.</p></div>}
-      {panel === 'api' && <div className="os-api">{api.map(([name, description]) => <article key={name}><code>{name}</code><p>{description}</p></article>)}<a href="/sdk-api.md" download className="os-secondary">Download the full API <Download size={16}/></a></div>}
+      {panel === 'api' && <div className="os-api">{api.map(([name, description]) => <article key={name}><code>{name}</code><p>{description}</p></article>)}<a href="/sdk-api.md" download className="os-secondary" onClick={event => { if (desktop) { event.preventDefault(); void fetch('/sdk-api.md').then(r => r.text()).then(text => download('orbit-api.md', text)).catch(e => setError(String(e))); } }}>Download the full API <Download size={16}/></a></div>}
       {(error || logs.length > 0) && <div className="os-console" aria-live="polite">{error && <p className="os-error">{error}</p>}{logs.slice(-5).map((line, i) => <p key={i}>{line}</p>)}</div>}
     </section>}
     {panel === 'home' && error && <div className="os-toast" role="alert">{error}<button onClick={() => setPanel('code')}>Open code</button></div>}

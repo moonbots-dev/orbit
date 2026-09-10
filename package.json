@@ -12,7 +12,7 @@
     "dev": "bun runtime/cli.ts dev",
     "orbit": "bun runtime/cli.ts",
     "desktop:build": "bash desktop/scripts/build-app.sh",
-    "desktop:open": "open desktop/.build/Orbit.app",
+    "desktop:open": "bash desktop/scripts/open-app.sh",
     "check": "tsc --noEmit && tsc -p runtime/tsconfig.json --noEmit",
     "test": "bun test platform/tests runtime/tests"
   },

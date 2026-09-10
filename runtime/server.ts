@@ -120,7 +120,7 @@ export async function startRuntime(options: { port?: number; assets?: string; pr
       if (!file.startsWith(assets + sep) || path.includes('..')) return new Response('Not found', { status: 404 });
       const blob = Bun.file(file);
       if (!await blob.exists()) return new Response('Not found', { status: 404 });
-      const headers: Record<string, string> = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+      const headers: Record<string, string> = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "frame-ancestors 'none'" };
       if (/orbit-worker-.*\.js$/.test(path)) headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self' 'unsafe-eval'; connect-src 'none'";
       return new Response(blob, { headers });
     },
