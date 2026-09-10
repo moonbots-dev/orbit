@@ -1,0 +1,26 @@
+{
+  "name": "@orbit/esp32",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Explicit USB adapter for the Orbit Waveshare ESP32-S3 firmware",
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "peerDependencies": {
+    "@orbit/sdk": "0.1.0"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "1.0.9",
+    "@serialport/stream": "13.0.0",
+    "@serialport/bindings-cpp": "13.0.0"
+  }
+}

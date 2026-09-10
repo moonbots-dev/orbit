@@ -1,0 +1,11 @@
+import { build } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/postcss';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { copyFile, appendFile, mkdir } from 'node:fs/promises';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+await build({ configFile: false, root: resolve(root, 'studio'), base: '/sim/', publicDir: false, plugins: [react()], resolve: { alias: { '@': root } }, css: { postcss: { plugins: [tailwindcss()] } }, worker: { format: 'es', rollupOptions: { output: { entryFileNames: 'assets/orbit-worker-[hash].js' } } }, build: { outDir: resolve(root, 'dist/landing/sim'), emptyOutDir: true } });
+await copyFile(resolve(root, 'platform/packages/sdk/API.md'), resolve(root, 'dist/landing/sdk-api.md'));
+await appendFile(resolve(root, 'dist/landing/_headers'), "\n/sim/assets/orbit-worker-*.js\n  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval'; connect-src 'none'\n");
+console.log('Built public Orbit Studio at /sim.');

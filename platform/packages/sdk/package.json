@@ -1,0 +1,39 @@
+{
+  "name": "@orbit/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Programmable Orbit device sessions and deterministic simulation",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "API.md",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    "./runtime": { "types": "./dist/runtime.d.ts", "import": "./dist/runtime.js" },
+    "./serial-protocol": { "types": "./dist/serial-protocol.d.ts", "import": "./dist/serial-protocol.js" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./simulation": {
+      "types": "./dist/simulation.d.ts",
+      "import": "./dist/simulation.js"
+    },
+    "./replay": {
+      "types": "./dist/replay.d.ts",
+      "import": "./dist/replay.js"
+    },
+    "./canvas": {
+      "types": "./dist/canvas.d.ts",
+      "import": "./dist/canvas.js"
+    },
+    "./protocol": {
+      "types": "./dist/protocol.d.ts",
+      "import": "./dist/protocol.js"
+    }
+  }
+}

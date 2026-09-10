@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "lib": ["ESNext", "DOM", "DOM.Iterable", "DOM.AsyncIterable"],
+    "module": "ESNext", "moduleResolution": "Bundler", "types": ["bun"],
+    "strict": true, "skipLibCheck": true, "esModuleInterop": true, "noEmit": true
+  },
+  "include": ["*.ts", "tests/**/*.ts"],
+  "exclude": ["worker.ts"]
+}
