@@ -8,3 +8,4 @@ Desktop programs are trusted local code. Browser programs execute in a worker; n
 Keep transport, input observations, drawing and character behavior separate. Avoid animation driven by browser-window liveness.
 Do not open or flash a physical device without a user request. USB ports may be owned by another host.
 Keep local recordings, transcripts, credentials and personal research out of this repository.
+To run anything on the user's laptop from a cloud session, use the relay (`bun run relay`, see docs/relay.md). Never weaken its signing, scope or sandbox to make a command pass.
