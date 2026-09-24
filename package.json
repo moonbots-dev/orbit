@@ -11,11 +11,10 @@
     "build": "bun run build:sdk && node landing/build.mjs && node studio/build.mjs",
     "dev": "bun runtime/cli.ts dev",
     "orbit": "bun runtime/cli.ts",
-    "relay": "bun relay/cli.ts",
     "desktop:build": "bash desktop/scripts/build-app.sh",
     "desktop:open": "bash desktop/scripts/open-app.sh",
-    "check": "tsc --noEmit && tsc -p runtime/tsconfig.json --noEmit && tsc -p relay/tsconfig.json --noEmit",
-    "test": "bun test platform/tests runtime/tests relay/tests"
+    "check": "tsc --noEmit && tsc -p runtime/tsconfig.json --noEmit",
+    "test": "bun test platform/tests runtime/tests"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
