@@ -76,7 +76,7 @@ switch (command) {
   }
   case 'install': {
     if (platform() !== 'darwin') fail('install sets up a macOS LaunchAgent; on other systems run `bun run relay agent` under your service manager.');
-    loadConfig();
+    const config = loadConfig();
     // Run from a copy the sandbox cannot write, so a relayed command cannot rewrite the agent.
     const app = join(relayHome(), 'app');
     rmSync(app, { recursive: true, force: true });
@@ -89,6 +89,7 @@ switch (command) {
 <plist version="1.0"><dict>
   <key>Label</key><string>${LABEL}</string>
   <key>ProgramArguments</key><array><string>${process.execPath}</string><string>${join(app, 'cli.ts')}</string><string>agent</string></array>
+  <key>EnvironmentVariables</key><dict><key>PATH</key><string>${config.path}</string><key>HOME</key><string>${homedir()}</string></dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>ProcessType</key><string>Interactive</string>
