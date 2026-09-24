@@ -8,3 +8,4 @@ Desktop programs are trusted local code. Browser programs execute in a worker; n
 Keep transport, input observations, drawing and character behavior separate. Avoid animation driven by browser-window liveness.
 Do not open or flash a physical device without a user request. USB ports may be owned by another host.
 Keep local recordings, transcripts, credentials and personal research out of this repository.
+To run anything on the user's computer from a cloud session (desktop app, macOS tools, the plugged-in puck), use tether; see .claude/skills/tether/SKILL.md.
